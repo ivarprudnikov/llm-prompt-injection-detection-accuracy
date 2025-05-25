@@ -3,3 +3,4 @@ python-dotenv
 openai
 tenacity
 mistralai
+azure-ai-inference
