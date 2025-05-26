@@ -4,3 +4,4 @@ openai
 tenacity
 mistralai
 azure-ai-inference
+ollama
