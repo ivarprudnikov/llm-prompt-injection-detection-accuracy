@@ -36,7 +36,6 @@ External references and related work:
 Prerequisites:
 - Python 3.12+
 - Jupyter Notebook
-- Rust compiler (for `genai` package used for Gemma model)
 - Your AI keys set in `.env.local` that override the values in `.env`
 
 Prepare environment:

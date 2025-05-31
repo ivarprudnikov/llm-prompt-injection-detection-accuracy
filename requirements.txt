@@ -6,3 +6,4 @@ tenacity
 mistralai
 azure-ai-inference
 ollama
+google-genai
