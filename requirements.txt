@@ -1,7 +1,8 @@
+ipykernel
 pandas
 matplotlib
 python-dotenv
-openai
+openai>=1.82
 tenacity
 mistralai
 azure-ai-inference
