@@ -9,3 +9,6 @@ azure-ai-inference
 ollama
 google-genai
 tiktoken
+numpy
+statsmodels
+termcolor
