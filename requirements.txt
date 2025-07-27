@@ -1,3 +1,5 @@
+aiohttp
+nest_asyncio
 ipykernel
 pandas
 matplotlib
