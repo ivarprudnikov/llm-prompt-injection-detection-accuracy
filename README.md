@@ -1,53 +1,98 @@
-Evaluating prompt injection detection using LLMs
-========================
 
-# About
+# Evaluating Prompt Injection Detection Using LLMs
 
-Testing LLM ability to detect injections and how/if it deteriorates when the context size is increased.
+## Overview
 
-The assumption is that LLMs ability to "see" the prompt injection in ever larger text will deteriorate. This was drawn from the observations in some research papers talking about it in the context of the ability to detect bugs in the code.
+This project evaluates the ability of large language models (LLMs) to detect prompt injections, and investigates how detection performance changes as the context size increases. The hypothesis is that LLMs' ability to identify prompt injections deteriorates with larger input contexts, as suggested in some recent research. The results do not show such correlation but instead suggests that a slight context increase could improve the detection performance. The results also reinforce the idea of a reinforced prompt by reminding at the end of the input about the original instruction which improves the detection performance.
 
-Core parts:
-- number of sample attacks under `data/basic_attacks.json`
-- few samples of valid prompts `data/basic_inputs.json`
-- a list of detections to evaluate against the above samples under `data/detections.json`
-- a set of prompt context increases to avaluate in addition to evaluating the above prompts
-  - there are few increases with an approximate token size: 1k, 10k, 50k (50k tests are expensive!)
-  - an increases are html content of recent news articles, the ones LLMs could not have seen before
-  - each increase is split in half and is zipped
-- a notebook for every model and context size combination to run the tests
-  - models are:
-    - OpenAI gpt-4.1 (1.7T params)
-    - Mistral ministral-3b-2410 (3B params)
-    - Mistral mistral-large-2411 (123B params)
-    - Llama Llama-4-Maverick-17B-128E-Instruct-FP8 (17B params)
-    - Gemini gemma3:12b (12B params)
-- a notebook to parse the results and generate a report
+## Repository Structure
 
-External references and related work:
-- Attack data was extracted from https://github.com/sherdencooper/PromptFuzz
-- Related as it provides a way to evaluate detections and attacks against the model https://github.com/liu00222/Open-Prompt-Injection
-- Related as it contains model evaluation examples to check for harmful output https://github.com/centerforaisafety/HarmBench
+- **data/**: Contains all data files used for evaluation but also the outputs.
+  - `basic_attacks.json`: Sample prompt injection attacks.
+  - `basic_inputs.json`: Valid (non-malicious) prompt samples.
+  - `detections.json`: List of detection prompts to evaluate against the samples.
+  - `increases/`: Zipped HTML files representing context increases (news articles) at different token sizes (1k, 5k, 10k, 50k), each split in half and zipped.
+  - `output_*.json`: Model evaluation outputs for various models and context sizes.
+  - `overview.html`: HTML overview of results.
+- **Notebooks**:
+  - `run_<model>_<context>.ipynb`: Notebooks to run tests for each model and context size combination (e.g., `run_gpt4_10k.ipynb`).
+  - `results_overview.ipynb`: Parses results and generates a summary report.
+- **requirements.txt**: Python dependencies.
+- **README.md**: Project documentation (this file).
 
-# Usage
+## Models under evaluation
 
-**Note** that running 50k context size tests is expensive, it is around $100 on any platform for 2k requests that tests need.
+- OpenAI GPT-4.1 (1.7T params)
+- Mistral ministral-3b-2410 (3B params)
+- Mistral mistral-large-2411 (123B params)
+- Llama Llama-4-Maverick-17B-128E-Instruct-FP8 (17B params)
+- Gemini gemma3:12b (12B params)
 
-Prerequisites:
+## Data and Evaluation
+
+- **Attacks**: Extracted from [PromptFuzz](https://github.com/sherdencooper/PromptFuzz).
+- **Detections**: Two detection prompts to test model detection capabilities.
+- **Context Increases**: Real news articles (unseen by models at the time), zipped and split for context expansion experiments. 
+
+## How to Use
+
+> **Warning:** Running 50k context size tests is expensive (approx. $100 for 2,000 requests).
+
+### Prerequisites
+
 - Python 3.12+
 - Jupyter Notebook
-- Your AI keys set in `.env.local` that override the values in `.env`
+- API keys for the relevant LLMs, set in `.env.local` (overrides `.env`)
+  - For GPT4 model tests
+    - `OPENAI_API_KEY` - get it from Open AI but also make sure to be on Tier 2 to get enough throughput without rate limiting.
+  - For Mistral model tests
+    - `MISTRAL_API_KEY` - get it from Mistral AI platform
+  - For Llama Maverick model tests
+    - Deploy the model on Azure AI Foundry and set the following environment variables:
+      - `AZURE_AI_URL=https://<Specific to deployment>.services.ai.azure.com/models`
+      - `AZURE_AI_KEY=****<Deployment key>****`
+      - `AZURE_AI_API_VERSION=2024-05-01-preview`
+  - For Gemma3 model tests
+    - For `0k` tests download and use `ollama` to run the Llama model locally `ollama run gemma3:12b`
+    - For other tests `GEMINI_API_KEY` is necessary - get it from Google AI Platform. The rate limit is very low no matter which pricing Tier you are on.
 
-Prepare environment:
-- Create a virtual environment:
-  ```bash
-  python -m venv venv
-  source venv/bin/activate  # On Windows use .venv\Scripts\activate
-  ```
-- Install dependencies:
-  ```bash
-  pip install --upgrade pip # might be needed for genai package
-  pip install -r requirements.txt
-  ```
-- Open the Jupyter notebook and run it
-- To parse the results and generate a report, run the [results_overview.ipynb](results_overview.ipynb) notebook
+### Setup
+
+1. **Create a virtual environment:**
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows use .venv\Scripts\activate
+   ```
+2. **Install dependencies:**
+   ```bash
+   pip install --upgrade pip  # May be needed for genai package
+   pip install -r requirements.txt
+   ```
+3. **Configure API keys:**
+   - Copy the template `cp .env .env.local`
+   - Place your API keys in a `.env.local`. This will override values in `.env`.
+
+### Running Experiments
+
+1. **Open the desired notebook** for the model and context size you wish to test (e.g., `run_gpt4_10k.ipynb`).
+2. **Run all cells** to execute the evaluation.
+3. **To parse results and generate a report**, run the [results_overview.ipynb](results_overview.ipynb) notebook.
+
+## References & Related Work
+
+- [PromptFuzz](https://github.com/sherdencooper/PromptFuzz): Source of attack data.
+- [Open-Prompt-Injection](https://github.com/liu00222/Open-Prompt-Injection): Evaluation framework for prompt injection detection.
+- [HarmBench](https://github.com/centerforaisafety/HarmBench): Model evaluation for harmful output detection.
+
+## Troubleshooting
+
+- **API Rate Limits:** If you encounter rate limit errors, check your API tier and consider reducing request frequency by increasing the `sleep` between test runs.
+- **Missing Keys:** Ensure `.env.local` is correctly configured and sourced.
+- **Dependency Issues:** Run `pip install --upgrade pip` before installing requirements. And make sure your `venv` is used and selected as a kernel in Jupyter.
+
+## License
+
+This project is licensed under the MIT License.
+
+Feel free to use and modify it for your own purposes, but please attribute the original authors, including PromptFuzz where the attack data came from.
+
